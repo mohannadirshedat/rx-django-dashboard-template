@@ -1,9 +1,9 @@
 services:
   web:
     build: .
-    command: reflex run --env prod --single-port --frontend-port 3002
+    command: reflex run
     ports:
-      - "3002:3002"
+      - "3000:3000"
       - "8000:8000"
     env_file:
       - path: .env
