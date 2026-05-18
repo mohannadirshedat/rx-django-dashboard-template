@@ -8,9 +8,9 @@ services:
       - prod
       - --single-port
       - --frontend-port
-      - "8080"
+      - "3002"
     ports:
-      - "8080:8080"
+      - "3002:3002"
     env_file:
       - path: .env
         required: false
