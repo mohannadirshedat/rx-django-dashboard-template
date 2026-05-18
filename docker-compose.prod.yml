@@ -1,0 +1,39 @@
+services:
+  web:
+    build: .
+    command:
+      - reflex
+      - run
+      - --env
+      - prod
+      - --single-port
+      - --frontend-port
+      - "8080"
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DJANGO_DEBUG: "0"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DJANGO_DB_PATH: /data/db.sqlite3
+      SERVE_MEDIA: "1"
+      RUN_COLLECTSTATIC: "1"
+    volumes:
+      - dashboard-db:/data
+      - dashboard-media:/app/media
+      - dashboard-static:/app/staticfiles
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  dashboard-db:
+  dashboard-media:
+  dashboard-static:

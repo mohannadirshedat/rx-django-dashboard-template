@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    command: reflex run --env prod
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DJANGO_SETTINGS_MODULE: backend.settings
+      DJANGO_DEBUG: "1"
+      DJANGO_DB_PATH: /data/db.sqlite3
+      SERVE_MEDIA: "1"
+      RUN_COLLECTSTATIC: "0"
+    volumes:
+      - .:/app
+      - /app/.venv
+      - /app/.web
+      - dashboard-db:/data
+      - dashboard-media:/app/media
+    stdin_open: true
+    tty: true
+
+volumes:
+  dashboard-db:
+  dashboard-media:

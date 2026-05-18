@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+
+# Reflex build artifacts (rebuilt in image)
+.web/
+.states/
+
+# Local data
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+
+# Git / IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+.cursor/
+
+# Environment
+.env
+.env.*
+
+# Tests / caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs / plans (not needed in image)
+*.md
+!README.md
