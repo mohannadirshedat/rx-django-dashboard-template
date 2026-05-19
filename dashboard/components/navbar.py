@@ -184,7 +184,7 @@ def navbar() -> rx.Component:
         rx.hstack(
             rx.icon("grid-3x3", size=24, color="white", margin_right="1em", cursor="pointer", display=["none", "none", "block"]),
             # The logo.
-            rx.image(src="/reflex_white.svg", height="1.5em"),
+            rx.image(src="/rxdjango-logo.png", height="2.0em", border_radius="var(--radius-1)"),
             rx.spacer(),
             rx.input(
                 rx.input.slot(rx.icon("search", color=rx.color("gray", 11)), padding_left="0"),

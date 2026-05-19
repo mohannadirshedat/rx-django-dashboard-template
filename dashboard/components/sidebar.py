@@ -15,10 +15,7 @@ def sidebar_header() -> rx.Component:
     """
     return rx.hstack(
         # The logo.
-        rx.color_mode_cond(
-            rx.image(src="/reflex_black.svg", height="1.5em"),
-            rx.image(src="/reflex_white.svg", height="1.5em"),
-        ),
+        rx.image(src="/rxdjango-logo.png", height="2.0em", border_radius="var(--radius-1)"),
         rx.spacer(),
         align="center",
         width="100%",

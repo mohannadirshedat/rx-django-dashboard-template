@@ -10,10 +10,7 @@ PADDING_TOP = "4rem"
 
 def custom_brand_icon(*, size: int = 28) -> rx.Component:
     height = f"{size / 10}em" if size else "3em"
-    return rx.color_mode_cond(
-        rx.image(src="/reflex_black.svg", height=height, margin_bottom="0.5em"),
-        rx.image(src="/reflex_white.svg", height=height, margin_bottom="0.5em"),
-    )
+    return rx.image(src="/rxdjango-logo.png", height=height, border_radius="var(--radius-1)", margin_bottom="0.5em")
 
 
 def custom_auth_card(*children: rx.Component, **props: object) -> rx.Component:
