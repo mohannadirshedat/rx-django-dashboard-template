@@ -6,6 +6,16 @@ from .. import styles
 from reflex_django.auth.state import DjangoAuthState
 
 
+class SidebarState(rx.State):
+    """The state for the collapsible sidebar."""
+    is_collapsed: bool = False
+
+    @rx.event
+    def toggle_collapse(self):
+        """Toggle the collapsed state of the sidebar."""
+        self.is_collapsed = not self.is_collapsed
+
+
 def sidebar_header() -> rx.Component:
     """Sidebar header.
 
@@ -31,13 +41,14 @@ def sidebar_logout_item() -> rx.Component:
         rx.button(
             rx.hstack(
                 sidebar_item_icon("log-out"),
-                rx.text("Log out", size="3", weight="regular"),
-                color=styles.text_color,
+                rx.cond(
+                    ~SidebarState.is_collapsed,
+                    rx.text("Log out", size="3", weight="regular", font_family='"Segoe UI Variable", "Segoe UI", "Inter", sans-serif'),
+                ),
                 align="center",
-                border_radius=styles.border_radius,
                 width="100%",
                 spacing="2",
-                padding="0.35em",
+                padding="0.6em 0.8em",
             ),
             on_click=DjangoAuthState.logout,
             variant="ghost",
@@ -45,41 +56,14 @@ def sidebar_logout_item() -> rx.Component:
             cursor="pointer",
             style={
                 "_hover": {
-                    "background_color": styles.gray_bg_color,
-                    "color": styles.text_color,
+                    "background_color": rx.color("gray", 4),
+                    "color": rx.color("gray", 12),
                 },
+                "color": rx.color("gray", 11),
+                "border_radius": "4px",
             },
         ),
         rx.fragment(),
-    )
-
-
-def sidebar_footer() -> rx.Component:
-    """Sidebar footer.
-
-    Returns:
-        The sidebar footer component.
-
-    """
-    return rx.hstack(
-        rx.link(
-            rx.text("Docs", size="3"),
-            href="https://reflex.dev/docs/getting-started/introduction/",
-            color_scheme="gray",
-            underline="none",
-        ),
-        rx.link(
-            rx.text("Blog", size="3"),
-            href="https://reflex.dev/blog/",
-            color_scheme="gray",
-            underline="none",
-        ),
-        rx.spacer(),
-        rx.color_mode.button(style={"opacity": "0.8", "scale": "0.95"}),
-        justify="start",
-        align="center",
-        width="100%",
-        padding="0.35em",
     )
 
 
@@ -100,7 +84,7 @@ def sidebar_item(text: str, url: str) -> rx.Component:
     """
     # Whether the item is active.
     active = (rx.State.router.page.path == url.lower()) | (
-        (rx.State.router.page.path == "/") & text == "Overview"
+        (rx.State.router.page.path == "/") & (text == "Overview")
     )
 
     return rx.link(
@@ -108,12 +92,12 @@ def sidebar_item(text: str, url: str) -> rx.Component:
             rx.cond(
                 active,
                 rx.box(
-                    width="4px",
-                    height="20px",
-                    background_color=styles.accent_text_color,
-                    border_radius="4px",
+                    width="3px",
+                    height="18px",
+                    bg=rx.color("accent", 9),
                     position="absolute",
-                    left="0px",
+                    left="2px",
+                    border_radius="9999px",
                 ),
                 rx.fragment(),
             ),
@@ -126,29 +110,33 @@ def sidebar_item(text: str, url: str) -> rx.Component:
                 ("Settings", sidebar_item_icon("settings")),
                 sidebar_item_icon("layout-dashboard"),
             ),
-            rx.text(text, size="3", weight="regular"),
+            rx.cond(
+                ~SidebarState.is_collapsed,
+                rx.text(
+                    text,
+                    size="3",
+                    weight=rx.cond(active, "semibold", "regular"),
+                    font_family='"Segoe UI Variable", "Segoe UI", "Inter", sans-serif',
+                ),
+            ),
             color=rx.cond(
                 active,
-                styles.accent_text_color,
-                styles.text_color,
+                rx.color("gray", 12),
+                rx.color("gray", 11),
             ),
             style={
                 "_hover": {
                     "background_color": rx.cond(
                         active,
-                        styles.accent_bg_color,
-                        rx.color("gray", 3),
+                        rx.color("gray", 5),
+                        rx.color("gray", 4),
                     ),
-                    "color": rx.cond(
-                        active,
-                        styles.accent_text_color,
-                        styles.text_color,
-                    ),
+                    "color": rx.color("gray", 12),
                     "opacity": "1",
                 },
                 "background_color": rx.cond(
                     active,
-                    styles.accent_bg_color,
+                    rx.color("gray", 4),
                     "transparent",
                 ),
                 "opacity": rx.cond(
@@ -159,7 +147,7 @@ def sidebar_item(text: str, url: str) -> rx.Component:
                 "position": "relative",
             },
             align="center",
-            border_radius="6px",
+            border_radius="4px",
             width="100%",
             spacing="2",
             padding="0.6em 0.8em",
@@ -201,6 +189,8 @@ def sidebar() -> rx.Component:
         ),
     )
 
+    width_val = rx.cond(SidebarState.is_collapsed, "4.5em", styles.sidebar_content_width)
+
     return rx.flex(
         rx.vstack(
             rx.vstack(
@@ -216,22 +206,24 @@ def sidebar() -> rx.Component:
             ),
             rx.spacer(),
             sidebar_logout_item(),
-            sidebar_footer(),
             justify="start",
             align="start",
-            width=styles.sidebar_content_width,
+            width=width_val,
             height="calc(100vh - 60px)",
-            padding_x=["1em", "1em", "0.7em"],
+            padding_x=rx.cond(SidebarState.is_collapsed, "0.5em", ["1em", "1em", "0.7em"]),
             padding_y="1.5em",
+            transition="width 0.2s ease-in-out, padding 0.2s ease-in-out",
         ),
         display=["none", "none", "flex", "flex", "flex", "flex"],
-        max_width=styles.sidebar_content_width,
-        width="auto",
+        max_width=width_val,
+        width=width_val,
         height="100%",
         position="sticky",
         justify="start",
         top="60px",
         left="0px",
         flex="none",
-        bg="transparent",
+        bg=rx.color_mode_cond(rx.color("gray", 2), rx.color("gray", 3)),
+        border_right=f"1px solid {rx.color('gray', 4)}",
+        transition="width 0.2s ease-in-out, max-width 0.2s ease-in-out",
     )

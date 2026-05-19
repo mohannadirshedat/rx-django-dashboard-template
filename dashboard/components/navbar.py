@@ -82,18 +82,6 @@ def navbar_footer() -> rx.Component:
 
     """
     return rx.hstack(
-        rx.link(
-            rx.text("Docs", size="3"),
-            href="https://reflex.dev/docs/getting-started/introduction/",
-            color_scheme="gray",
-            underline="none",
-        ),
-        rx.link(
-            rx.text("Blog", size="3"),
-            href="https://reflex.dev/blog/",
-            color_scheme="gray",
-            underline="none",
-        ),
         rx.spacer(),
         rx.color_mode.button(style={"opacity": "0.8", "scale": "0.95"}),
         justify="start",
@@ -172,6 +160,7 @@ def menu_button() -> rx.Component:
 
 
 from dashboard.components.notification import notification
+from dashboard.components.sidebar import SidebarState
 
 def navbar() -> rx.Component:
     """The navbar.
@@ -182,7 +171,15 @@ def navbar() -> rx.Component:
     """
     return rx.el.nav(
         rx.hstack(
-            rx.icon("grid-3x3", size=24, color="white", margin_right="1em", cursor="pointer", display=["none", "none", "block"]),
+            rx.icon(
+                "grid-3x3",
+                size=24,
+                color="white",
+                margin_right="1em",
+                cursor="pointer",
+                display=["none", "none", "block"],
+                on_click=SidebarState.toggle_collapse,
+            ),
             # The logo.
             rx.image(src="/rxdjango-logo.png", height="2.0em", border_radius="var(--radius-1)"),
             rx.spacer(),
