@@ -2,6 +2,7 @@
 
 import reflex as rx
 from reflex_django.auth import LoginPage, RegisterPage, PasswordResetPage, PasswordResetConfirmPage
+from ..templates.template import ThemeState
 
 AUTH_CARD_MAX_WIDTH = "28em"
 PADDING_TOP = "4rem"
@@ -32,29 +33,36 @@ def custom_auth_card(*children: rx.Component, **props: object) -> rx.Component:
 
 
 def custom_auth_page_shell(content: rx.Component) -> rx.Component:
-    """Vertically centered page layout for auth screens with a theme toggle."""
-    return rx.box(
+    """Vertically centered page layout for auth screens with a theme toggle and proper theme wrapper."""
+    return rx.theme(
         rx.box(
-            rx.color_mode.button(style={"opacity": "0.8", "scale": "0.95"}),
-            position="absolute",
-            top="1.5rem",
-            right="1.5rem",
-            z_index="10",
-        ),
-        rx.center(
-            content,
-            padding_top=PADDING_TOP,
-            padding_x="1rem",
-            min_height="100vh",
+            rx.box(
+                rx.color_mode.button(style={"opacity": "0.8", "scale": "0.95"}),
+                position="absolute",
+                top="1.5rem",
+                right="1.5rem",
+                z_index="10",
+            ),
+            rx.center(
+                content,
+                padding_top=PADDING_TOP,
+                padding_x="1rem",
+                min_height="100vh",
+                width="100%",
+            ),
             width="100%",
+            min_height="100vh",
+            position="relative",
+            background=rx.color_mode_cond(
+                f"linear-gradient(135deg, {rx.color('gray', 1)} 0%, {rx.color('gray', 3)} 100%)",
+                f"linear-gradient(135deg, {rx.color('gray', 1)} 0%, {rx.color('gray', 2)} 100%)"
+            ),
         ),
-        width="100%",
-        min_height="100vh",
-        position="relative",
-        background=rx.color_mode_cond(
-            f"linear-gradient(135deg, {rx.color('gray', 1)} 0%, {rx.color('gray', 3)} 100%)",
-            f"linear-gradient(135deg, {rx.color('gray', 1)} 0%, {rx.color('gray', 2)} 100%)"
-        ),
+        has_background=True,
+        accent_color=ThemeState.accent_color,
+        gray_color=ThemeState.gray_color,
+        radius=ThemeState.radius,
+        scaling=ThemeState.scaling,
     )
 
 

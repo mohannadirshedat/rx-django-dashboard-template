@@ -200,6 +200,7 @@ def navbar() -> rx.Component:
                 rx.icon("bell", color="white", size=20, cursor="pointer"),
                 rx.icon("message-square-text", color="white", size=20, cursor="pointer"),
                 rx.icon("user", color="white", size=20, cursor="pointer"),
+                rx.color_mode.button(style={"color": "white", "opacity": "0.9", "scale": "0.95"}),
                 spacing="4",
                 align="center",
                 display=["none", "none", "flex"],
