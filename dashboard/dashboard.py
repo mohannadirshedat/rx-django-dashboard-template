@@ -24,6 +24,7 @@ from .pages.auth import (
 app = rx.App(
     style=styles.base_style,
     stylesheets=styles.base_stylesheets,
+    theme=rx.theme(appearance="light"),
 )
 
 # Initialize Django environment and register custom inherited authentication pages
