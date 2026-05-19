@@ -151,7 +151,7 @@ def sidebar_item(text: str, url: str) -> rx.Component:
                 },
                 "background_color": rx.cond(
                     active,
-                    rx.color("blue", 3),
+                    styles.accent_bg_color,
                     "transparent",
                 ),
                 "opacity": rx.cond(

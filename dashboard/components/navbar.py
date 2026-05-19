@@ -215,7 +215,7 @@ def navbar() -> rx.Component:
         ),
         display="block",
         position="sticky",
-        background_color="#0f6cbd",
+        background_color=rx.color("accent", 9),
         top="0px",
         z_index="10",
         width="100%",
