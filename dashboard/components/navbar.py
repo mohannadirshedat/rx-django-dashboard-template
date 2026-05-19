@@ -171,6 +171,8 @@ def menu_button() -> rx.Component:
     )
 
 
+from dashboard.components.notification import notification
+
 def navbar() -> rx.Component:
     """The navbar.
 
@@ -180,22 +182,42 @@ def navbar() -> rx.Component:
     """
     return rx.el.nav(
         rx.hstack(
+            rx.icon("grid-3x3", size=24, color="white", margin_right="1em", cursor="pointer", display=["none", "none", "block"]),
             # The logo.
-            rx.color_mode_cond(
-                rx.image(src="/reflex_black.svg", height="1em"),
-                rx.image(src="/reflex_white.svg", height="1em"),
+            rx.image(src="/reflex_white.svg", height="1.5em"),
+            rx.spacer(),
+            rx.input(
+                rx.input.slot(rx.icon("search", color=rx.color("gray", 11)), padding_left="0"),
+                placeholder="Search...",
+                size="2",
+                width="100%",
+                max_width="400px",
+                radius="medium",
+                style={"background_color": rx.color_mode_cond("white", rx.color("gray", 4)), "border": "none"},
             ),
             rx.spacer(),
-            menu_button(),
+            rx.flex(
+                rx.icon("bell", color="white", size=20, cursor="pointer"),
+                rx.icon("message-square-text", color="white", size=20, cursor="pointer"),
+                rx.icon("user", color="white", size=20, cursor="pointer"),
+                spacing="4",
+                align="center",
+                display=["none", "none", "flex"],
+            ),
+            rx.box(
+                menu_button(),
+                display=["block", "block", "block", "block", "block", "none"],
+            ),
             align="center",
             width="100%",
-            padding_y="1.25em",
-            padding_x=["1em", "1em", "2em"],
+            padding_y="0.8em",
+            padding_x=["1em", "1em", "1.5em"],
         ),
-        display=["block", "block", "block", "block", "block", "none"],
+        display="block",
         position="sticky",
-        background_color=rx.color("gray", 1),
+        background_color="#0f6cbd",
         top="0px",
-        z_index="5",
-        border_bottom=styles.border,
+        z_index="10",
+        width="100%",
+        border_bottom="1px solid rgba(0,0,0,0.1)",
     )

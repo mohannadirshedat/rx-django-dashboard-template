@@ -26,67 +26,50 @@ def stats_card(
     return rx.card(
         rx.vstack(
             rx.hstack(
-                rx.badge(
-                    rx.icon(tag=icon, size=34),
-                    color_scheme=icon_color,
-                    radius="full",
-                    padding="0.7rem",
-                ),
-                rx.vstack(
-                    rx.heading(
-                        rx.hstack(
-                            rx.cond(
-                                extra_char != "",
-                                rx.text(extra_char),
-                                rx.fragment(),
-                            ),
-                            rx.text(value),
-                            spacing="1",
-                            align="center",
-                        ),
-                        size="6",
-                        weight="bold",
-                    ),
-                    rx.text(stat_name, size="4", weight="medium"),
-                    spacing="1",
-                    height="100%",
-                    align_items="start",
-                    width="100%",
-                ),
-                height="100%",
-                spacing="4",
+                rx.icon(tag=icon, size=20, color=rx.color(icon_color, 9)),
+                rx.text(stat_name, size="3", weight="medium", color=rx.color("gray", 11)),
                 align="center",
-                width="100%",
+                spacing="2",
             ),
-            rx.hstack(
+            rx.heading(
                 rx.hstack(
-                    rx.icon(
-                        tag=arrow_icon,
-                        size=24,
-                        color=rx.color(arrow_color, 9),
+                    rx.cond(
+                        extra_char != "",
+                        rx.text(extra_char),
+                        rx.fragment(),
                     ),
-                    rx.text(
-                        percentage,
-                        "%",
-                        size="3",
-                        color=rx.color(arrow_color, 9),
-                        weight="medium",
-                    ),
-                    spacing="2",
+                    rx.text(value),
+                    spacing="1",
                     align="center",
                 ),
+                size="7",
+                weight="bold",
+            ),
+            rx.hstack(
+                rx.icon(
+                    tag=arrow_icon,
+                    size=16,
+                    color=rx.color(arrow_color, 9),
+                ),
                 rx.text(
-                    change_label,
-                    " from last month",
+                    percentage,
+                    "%",
+                    size="2",
+                    color=rx.color(arrow_color, 9),
+                    weight="medium",
+                ),
+                rx.text(
+                    "vs last month",
                     size="2",
                     color=rx.color("gray", 10),
                 ),
                 align="center",
-                width="100%",
+                spacing="2",
             ),
             spacing="3",
+            align_items="start",
         ),
-        size="3",
+        size="2",
         width="100%",
         box_shadow=styles.box_shadow_style,
     )

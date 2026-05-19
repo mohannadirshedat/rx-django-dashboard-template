@@ -25,9 +25,12 @@ template_page_style = {
 }
 
 template_content_style = {
-    "padding": "1em",
+    "padding": "2em",
     "margin_bottom": "2em",
     "min_height": "90vh",
+    "background_color": rx.color_mode_cond("white", rx.color("gray", 2)),
+    "border_radius": "8px",
+    "box_shadow": rx.color_mode_cond("0 4px 8px 0 rgba(0,0,0,0.04), 0 0px 2px 0 rgba(0,0,0,0.06)", "none"),
 }
 
 link_style = {
@@ -74,7 +77,7 @@ ghost_input_style = {
     "color": "",
 }
 
-box_shadow_style = "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)"
+box_shadow_style = "0 4px 8px 0 rgba(0,0,0,0.04), 0 0px 2px 0 rgba(0,0,0,0.06)"
 
 color_picker_style = {
     "border_radius": "max(var(--radius-3), var(--radius-full))",
@@ -96,5 +99,5 @@ base_stylesheets = [
 ]
 
 base_style = {
-    "font_family": "Inter",
+    "font_family": "\"Segoe UI Variable\", \"Segoe UI\", system-ui, sans-serif",
 }

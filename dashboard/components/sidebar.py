@@ -108,6 +108,18 @@ def sidebar_item(text: str, url: str) -> rx.Component:
 
     return rx.link(
         rx.hstack(
+            rx.cond(
+                active,
+                rx.box(
+                    width="4px",
+                    height="20px",
+                    background_color=styles.accent_text_color,
+                    border_radius="4px",
+                    position="absolute",
+                    left="0px",
+                ),
+                rx.fragment(),
+            ),
             rx.match(
                 text,
                 ("Overview", sidebar_item_icon("home")),
@@ -128,7 +140,7 @@ def sidebar_item(text: str, url: str) -> rx.Component:
                     "background_color": rx.cond(
                         active,
                         styles.accent_bg_color,
-                        styles.gray_bg_color,
+                        rx.color("gray", 3),
                     ),
                     "color": rx.cond(
                         active,
@@ -137,17 +149,23 @@ def sidebar_item(text: str, url: str) -> rx.Component:
                     ),
                     "opacity": "1",
                 },
+                "background_color": rx.cond(
+                    active,
+                    rx.color("blue", 3),
+                    "transparent",
+                ),
                 "opacity": rx.cond(
                     active,
                     "1",
                     "0.95",
                 ),
+                "position": "relative",
             },
             align="center",
-            border_radius=styles.border_radius,
+            border_radius="6px",
             width="100%",
             spacing="2",
-            padding="0.35em",
+            padding="0.6em 0.8em",
         ),
         underline="none",
         href=url,
@@ -188,7 +206,6 @@ def sidebar() -> rx.Component:
 
     return rx.flex(
         rx.vstack(
-            sidebar_header(),
             rx.vstack(
                 *[
                     sidebar_item(
@@ -203,20 +220,21 @@ def sidebar() -> rx.Component:
             rx.spacer(),
             sidebar_logout_item(),
             sidebar_footer(),
-            justify="end",
-            align="end",
+            justify="start",
+            align="start",
             width=styles.sidebar_content_width,
-            height="100dvh",
-            padding="1em",
+            height="calc(100vh - 60px)",
+            padding_x=["1em", "1em", "0.7em"],
+            padding_y="1.5em",
         ),
         display=["none", "none", "flex", "flex", "flex", "flex"],
-        max_width=styles.sidebar_width,
+        max_width=styles.sidebar_content_width,
         width="auto",
         height="100%",
         position="sticky",
-        justify="end",
-        top="0px",
+        justify="start",
+        top="60px",
         left="0px",
-        flex="1",
-        bg=rx.color("gray", 2),
+        flex="none",
+        bg="transparent",
     )

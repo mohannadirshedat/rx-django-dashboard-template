@@ -36,11 +36,11 @@ def menu_item_link(text, href):
 class ThemeState(rx.State):
     """The state for the theme of the app."""
 
-    accent_color: str = "crimson"
+    accent_color: str = "blue"
 
-    gray_color: str = "gray"
+    gray_color: str = "slate"
 
-    radius: str = "large"
+    radius: str = "medium"
 
     scaling: str = "100%"
 
@@ -101,37 +101,41 @@ def template(
         all_meta = [*default_meta, *(meta or [])]
 
         def templated_page():
-            return rx.flex(
+            return rx.vstack(
                 navbar(),
-                sidebar(),
                 rx.flex(
-                    rx.vstack(
-                        page_content(),
+                    sidebar(),
+                    rx.flex(
+                        rx.vstack(
+                            page_content(),
+                            width="100%",
+                            **styles.template_content_style,
+                        ),
                         width="100%",
-                        **styles.template_content_style,
+                        **styles.template_page_style,
+                        max_width=[
+                            "100%",
+                            "100%",
+                            "100%",
+                            "100%",
+                            "100%",
+                            styles.max_width,
+                        ],
                     ),
-                    width="100%",
-                    **styles.template_page_style,
-                    max_width=[
-                        "100%",
-                        "100%",
-                        "100%",
-                        "100%",
-                        "100%",
-                        styles.max_width,
+                    flex_direction=[
+                        "column",
+                        "column",
+                        "column",
+                        "column",
+                        "column",
+                        "row",
                     ],
+                    width="100%",
+                    margin="auto",
+                    position="relative",
                 ),
-                flex_direction=[
-                    "column",
-                    "column",
-                    "column",
-                    "column",
-                    "column",
-                    "row",
-                ],
                 width="100%",
-                margin="auto",
-                position="relative",
+                spacing="0",
             )
 
         page_on_load = on_load
