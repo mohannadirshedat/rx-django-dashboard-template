@@ -58,7 +58,7 @@ def index() -> rx.Component:
         rx.heading(f"Welcome, {OverviewState.welcome_name}", size="7", margin_bottom="0.5em"),
         stats_cards(),
         card(
-            rx.hstack(
+            rx.flex(
                 tab_content_header(),
                 rx.segmented_control.root(
                     rx.segmented_control.item("Users", value="users"),
@@ -70,6 +70,9 @@ def index() -> rx.Component:
                 ),
                 width="100%",
                 justify="between",
+                align="center",
+                flex_direction=["column", "column", "row", "row", "row"],
+                spacing="4",
             ),
             rx.match(
                 OverviewState.selected_tab,

@@ -125,9 +125,9 @@ def template(
                     flex_direction=[
                         "column",
                         "column",
-                        "column",
-                        "column",
-                        "column",
+                        "row",
+                        "row",
+                        "row",
                         "row",
                     ],
                     width="100%",

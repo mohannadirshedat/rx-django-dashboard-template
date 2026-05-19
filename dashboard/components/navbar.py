@@ -188,7 +188,7 @@ def navbar() -> rx.Component:
                 placeholder="Search...",
                 size="2",
                 width="100%",
-                max_width="400px",
+                max_width=["120px", "200px", "300px", "400px"],
                 radius="medium",
                 style={"background_color": rx.color_mode_cond("white", rx.color("gray", 4)), "border": "none"},
             ),
@@ -204,7 +204,7 @@ def navbar() -> rx.Component:
             ),
             rx.box(
                 menu_button(),
-                display=["block", "block", "block", "block", "block", "none"],
+                display=["block", "block", "none", "none", "none", "none"],
             ),
             align="center",
             width="100%",
