@@ -155,5 +155,5 @@ Configured in `rxconfig.py` via `ReflexDjangoPlugin`:
 
 ## Links
 
-- [Reflex documentation](https://reflex.dev/docs)
-- [reflex-django on GitHub](https://github.com/reflex-dev/reflex-django)
+- [Reflex-Django documentation](https://mohannadirshedat.github.io/reflex-django/)
+- [reflex-django on GitHub](https://github.com/mohannadirshedat/reflex-django)
