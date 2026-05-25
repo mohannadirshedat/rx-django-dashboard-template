@@ -63,6 +63,37 @@ CSRF_TRUSTED_ORIGINS = _env_list(
 SERVE_MEDIA = _env_bool("SERVE_MEDIA", default=DEBUG)
 
 
+# ---------------------------------------------------------------------------
+# HTTPS / security headers
+# ---------------------------------------------------------------------------
+# When ``DEBUG`` is off we assume a TLS-terminating reverse proxy (Nginx,
+# Caddy, ALB, Cloud Run, …) sits in front of uvicorn and forwards
+# ``X-Forwarded-Proto: https``. That lets Django mark session/CSRF cookies
+# as Secure and emit ``Cross-Origin-Opener-Policy: same-origin`` (browsers
+# discard COOP on plain http:// origins, hence the
+# "Cross-Origin-Opener-Policy header has been ignored" console warning).
+#
+# Override individual knobs via env vars when you intentionally run the
+# production image over plain HTTP (e.g. smoke testing the container, or a
+# private network with mTLS terminated elsewhere).
+_behind_tls = _env_bool("DJANGO_BEHIND_TLS_PROXY", default=not DEBUG)
+
+if _behind_tls:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = _env_bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
+    SESSION_COOKIE_SECURE = _env_bool("DJANGO_SESSION_COOKIE_SECURE", default=True)
+    CSRF_COOKIE_SECURE = _env_bool("DJANGO_CSRF_COOKIE_SECURE", default=True)
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool(
+        "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True
+    )
+    SECURE_HSTS_PRELOAD = _env_bool("DJANGO_SECURE_HSTS_PRELOAD", default=False)
+else:
+    # Plain-HTTP deploy (or DEBUG). Strip COOP so the browser stops warning
+    # in the console. Without TLS, COOP cannot be enforced anyway.
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
+
 # Application definition
 
 INSTALLED_APPS = [

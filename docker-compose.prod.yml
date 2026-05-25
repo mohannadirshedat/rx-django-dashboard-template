@@ -1,19 +1,31 @@
-# Production-like compose stack.
+# Production compose stack — Coolify-ready.
 #
-# Builds the ``runtime`` image (SPA pre-built at image build time) and serves
-# it through uvicorn on port 8000. Health checks hit Reflex's ``/_health``
-# endpoint. Optional Postgres and Redis services are gated behind compose
-# profiles so the minimal SQLite topology still runs out-of-the-box.
+# Differences from a vanilla compose:
+#   * No ``ports:`` mapping. The container only ``expose:``s its port on the
+#     Docker network so Coolify's Traefik can reach it; nothing is published
+#     on the host. (Locally you can still ``curl`` it from another container
+#     or add a one-off ``docker run -p`` for ad-hoc tests.)
+#   * ``SERVICE_FQDN_WEB_3000`` is the Coolify magic env var: Coolify reads
+#     it during deploy, generates a Traefik router for service ``web`` on
+#     port ``3000``, terminates TLS at the edge, and rewrites the variable
+#     with the assigned ``https://…`` URL inside the container.
+#   * uvicorn listens on ``0.0.0.0:3000``.
 #
-# Run with:
+# Coolify deployment:
+#   1. Create a new "Docker Compose" resource pointing at this file.
+#   2. Set the required env vars (DJANGO_SECRET_KEY at minimum) in the UI.
+#   3. Coolify assigns/asks for a domain for SERVICE_FQDN_WEB_3000.
+#   4. Deploy. Traefik handles HTTPS automatically.
+#
+# Standalone use (no Coolify):
 #   docker compose -f docker-compose.prod.yml up --build
+#   docker compose -f docker-compose.prod.yml exec web curl -fsS http://localhost:3000/_health
+#   # To publish on the host for local prod smoke-testing, add an override:
+#   #   docker compose -f docker-compose.prod.yml -f docker-compose.prod.local.yml up
+#   # where docker-compose.prod.local.yml maps ``ports: ["3000:3000"]``.
 #
 # Postgres + Redis (recommended for >1 worker):
 #   docker compose -f docker-compose.prod.yml --profile postgres --profile redis up --build
-#
-# In front of this stack put a TLS-terminating reverse proxy (Nginx, Caddy,
-# Traefik, or the platform's edge) and forward WebSocket frames on
-# ``/_event``. See ``reflex-django/docs/deployment.md`` for sample configs.
 
 services:
   web:
@@ -31,26 +43,40 @@ services:
       - --host
       - 0.0.0.0
       - --port
-      - "3002"
+      - "3000"
       - --workers
       - "${UVICORN_WORKERS:-2}"
       - --proxy-headers
       - --forwarded-allow-ips
       - "*"
-    ports:
-      - "${PUBLIC_PORT:-3002}:3002"
+    # ``expose`` advertises the port to other containers on the same Docker
+    # network (Coolify's Traefik joins this network automatically) without
+    # publishing it on the host. No ``ports:`` block on purpose.
+    expose:
+      - "3000"
     env_file:
       - path: .env
         required: false
     environment:
+      # ----- Coolify FQDN magic -----------------------------------------
+      # Leave empty and Coolify will assign an auto-generated ``*.sslip.io``
+      # domain on first deploy (editable in the UI). After deploy the
+      # variable is rewritten to ``https://<domain>``. The trailing port
+      # ``_3000`` tells Coolify which container port to route to.
+      SERVICE_FQDN_WEB_3000: ${SERVICE_FQDN_WEB_3000:-}
+      # ----- Django ------------------------------------------------------
       DJANGO_SETTINGS_MODULE: backend.settings
       DJANGO_DEBUG: "0"
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env / Coolify env}
+      # Coolify terminates TLS, so the secure-cookie / HSTS block in
+      # ``backend/settings.py`` flips on automatically. If you ever run this
+      # compose without a TLS-terminating proxy in front, set
+      # ``DJANGO_BEHIND_TLS_PROXY=0`` in the env to relax cookie flags.
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
-      # Database. Defaults to SQLite on a volume; flip ``DJANGO_DB_ENGINE``
-      # to ``postgresql`` (and enable the ``postgres`` profile below) for a
-      # multi-worker deployment.
+      # ----- Database ----------------------------------------------------
+      # Defaults to SQLite on a named volume; flip ``DJANGO_DB_ENGINE`` to
+      # ``postgresql`` (and enable the ``postgres`` profile) for >1 worker.
       DJANGO_DB_ENGINE: ${DJANGO_DB_ENGINE:-sqlite}
       DJANGO_DB_PATH: /data/db.sqlite3
       DJANGO_DB_NAME: ${DJANGO_DB_NAME:-rxdjango}
@@ -58,8 +84,9 @@ services:
       DJANGO_DB_PASSWORD: ${DJANGO_DB_PASSWORD:-}
       DJANGO_DB_HOST: ${DJANGO_DB_HOST:-db}
       DJANGO_DB_PORT: ${DJANGO_DB_PORT:-5432}
-      # Optional: Redis-backed state manager (required for >1 worker).
+      # ----- Optional: Redis-backed state manager (required for >1 worker)
       REDIS_URL: ${REDIS_URL:-}
+      # ----- Misc --------------------------------------------------------
       SERVE_MEDIA: "1"
       RUN_COLLECTSTATIC: "0"
     volumes:
@@ -68,7 +95,7 @@ services:
       - dashboard-uploads:/app/uploaded_files
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/_health"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/_health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -82,9 +109,8 @@ services:
         required: false
 
   # Postgres database. Activate with ``--profile postgres`` together with
-  # ``DJANGO_DB_ENGINE=postgresql`` in ``.env``. ``DJANGO_DB_PASSWORD`` MUST
-  # be set in ``.env`` when this profile is used; the empty default below
-  # keeps ``docker compose config`` valid for the SQLite topology.
+  # ``DJANGO_DB_ENGINE=postgresql`` in the env. Not exposed on the host —
+  # only the ``web`` service can reach it on the internal network.
   db:
     image: postgres:16-alpine
     profiles: ["postgres"]
@@ -101,6 +127,7 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # Redis for Reflex state-manager + Django cache. Internal-only.
   redis:
     image: redis:7-alpine
     profiles: ["redis"]
