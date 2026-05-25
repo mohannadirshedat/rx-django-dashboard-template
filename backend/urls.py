@@ -15,7 +15,7 @@ from django.urls import path, re_path
 from django.views.generic import RedirectView
 from django.views.static import serve
 from reflex_django.urls import reflex_mount
-
+import reflex as rx
 urlpatterns = [
     path("admin", RedirectView.as_view(url="/admin/", permanent=False)),
     path("admin/", admin.site.urls),
@@ -45,10 +45,13 @@ _redis_url = os.environ.get("REDIS_URL")
 if _redis_url:
     _rx_config["redis_url"] = _redis_url
 
+
 urlpatterns += [
     reflex_mount(
         app_name="dashboard",
         django_prefix=("/admin",),
         rx_config=_rx_config,
+        plugins=[rx.plugins.RadixThemesPlugin()],
+        
     ),
 ]
