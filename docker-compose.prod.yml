@@ -59,11 +59,16 @@ services:
         required: false
     environment:
       # ----- Coolify FQDN magic -----------------------------------------
-      # Leave empty and Coolify will assign an auto-generated ``*.sslip.io``
-      # domain on first deploy (editable in the UI). After deploy the
-      # variable is rewritten to ``https://<domain>``. The trailing port
-      # ``_3000`` tells Coolify which container port to route to.
-      SERVICE_FQDN_WEB_3000: ${SERVICE_FQDN_WEB_3000:-}
+      # IMPORTANT: do NOT wrap this in ${...} — Coolify pattern-matches on
+      # the literal ``SERVICE_FQDN_<SERVICE>_<PORT>`` key. The value must
+      # be either empty (Coolify auto-assigns a ``*.sslip.io`` domain on
+      # first deploy) or a hard-coded ``https://<your-domain>``. Edit the
+      # actual domain from the service's **Domains** tab in the Coolify
+      # UI — it is locked in the Environment Variables tab because the
+      # Domains UI owns it. After deploy Coolify also injects the
+      # read-only derivatives ``SERVICE_URL_WEB`` and
+      # ``SERVICE_URL_WEB_3000`` (host-only, no scheme).
+      SERVICE_FQDN_WEB_3000: ""
       # ----- Django ------------------------------------------------------
       DJANGO_SETTINGS_MODULE: backend.settings
       DJANGO_DEBUG: "0"

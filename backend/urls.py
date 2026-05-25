@@ -49,9 +49,9 @@ if _redis_url:
 urlpatterns += [
     reflex_mount(
         app_name="dashboard",
-        django_prefix=("/admin",),
+        django_prefix=("/admin","/media",),
         rx_config=_rx_config,
         plugins=[rx.plugins.RadixThemesPlugin()],
-        
+
     ),
 ]
