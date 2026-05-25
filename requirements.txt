@@ -1,2 +1,17 @@
+# Core (always required)
 reflex-django>=0.2.6
 pillow>=11.0.0
+
+# ASGI server (production; uvicorn is the default reference server in
+# reflex-django's deployment guide). uvicorn[standard] pulls in fast
+# uvloop/httptools wheels on Linux.
+uvicorn[standard]>=0.32
+
+# Optional: PostgreSQL driver. Required only when the container is run
+# with ``DJANGO_DB_ENGINE=postgresql`` (see docker-compose.prod.yml).
+# ``psycopg[binary]`` ships a self-contained wheel — no system libpq needed.
+psycopg[binary]>=3.2
+
+# Optional: shared Reflex state manager across multiple workers/replicas.
+# Activated by setting ``REDIS_URL`` and passing it into rx_config in urls.py.
+redis>=5.0

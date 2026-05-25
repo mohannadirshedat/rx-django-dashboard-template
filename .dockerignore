@@ -8,38 +8,53 @@ __pycache__/
 venv/
 env/
 
-# Reflex build artifacts (rebuilt in image)
+# Reflex / Node build artefacts (rebuilt inside the image)
 .web/
 .states/
+node_modules/
 
-# Local data
+# Local data — never bake into the image
 db.sqlite3
 *.sqlite3
+*.sqlite3-journal
 media/
+uploaded_files/
 staticfiles/
+
+# Logs / temp files
+build.log
+run.log
+*.log
 
 # Git / IDE
 .git/
 .gitignore
+.gitattributes
 .idea/
 .vscode/
 .cursor/
 
-# Environment
+# Environment — only .env.example is copied
 .env
 .env.*
+!.env.example
 
 # Tests / caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.tox/
 htmlcov/
 .coverage
+.coverage.*
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Docs / plans (not needed in image)
+# Docs / project metadata (not needed in image, README stays)
 *.md
 !README.md
+docker-compose*.yml
+Dockerfile
+.dockerignore

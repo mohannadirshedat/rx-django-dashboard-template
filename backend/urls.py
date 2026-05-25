@@ -6,6 +6,8 @@ via ``@template`` / ``@page`` across the project apps (auto-discovered from
 ``INSTALLED_APPS``).
 """
 
+import os
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -31,13 +33,22 @@ elif getattr(settings, "SERVE_MEDIA", False):
         ),
     ]
 
+_rx_config: dict[str, object] = {
+    "frontend_port": 3000,
+    "backend_port": 8000,
+}
+
+# When ``REDIS_URL`` is set (production / multi-worker deploys), share Reflex
+# per-tab state across workers through Redis instead of process memory. Falls
+# back to the default in-memory state manager when unset (single-worker dev).
+_redis_url = os.environ.get("REDIS_URL")
+if _redis_url:
+    _rx_config["redis_url"] = _redis_url
+
 urlpatterns += [
     reflex_mount(
         app_name="dashboard",
         django_prefix=("/admin",),
-        rx_config={
-            "frontend_port": 3000,
-            "backend_port": 8000,
-        },
+        rx_config=_rx_config,
     ),
 ]

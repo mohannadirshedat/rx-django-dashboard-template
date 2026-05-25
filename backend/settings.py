@@ -113,14 +113,35 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+#
+# Defaults to SQLite (``DJANGO_DB_PATH`` overrides the file location) so local
+# development needs zero setup. Set ``DJANGO_DB_ENGINE=postgresql`` plus the
+# usual ``DJANGO_DB_NAME`` / ``DJANGO_DB_USER`` / ``DJANGO_DB_PASSWORD`` /
+# ``DJANGO_DB_HOST`` / ``DJANGO_DB_PORT`` to use Postgres (see
+# ``docker-compose.prod.yml``).
 
-_db_path = os.environ.get("DJANGO_DB_PATH")
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": Path(_db_path) if _db_path else BASE_DIR / "db.sqlite3",
+_db_engine = (os.environ.get("DJANGO_DB_ENGINE") or "sqlite").lower()
+
+if _db_engine in {"postgres", "postgresql"}:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DJANGO_DB_NAME", "rxdjango"),
+            "USER": os.environ.get("DJANGO_DB_USER", "rxdjango"),
+            "PASSWORD": os.environ.get("DJANGO_DB_PASSWORD", ""),
+            "HOST": os.environ.get("DJANGO_DB_HOST", "db"),
+            "PORT": os.environ.get("DJANGO_DB_PORT", "5432"),
+            "CONN_MAX_AGE": int(os.environ.get("DJANGO_DB_CONN_MAX_AGE", "600")),
+        }
     }
-}
+else:
+    _db_path = os.environ.get("DJANGO_DB_PATH")
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": Path(_db_path) if _db_path else BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -163,6 +184,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+_site_origin = os.environ.get("REFLEX_DJANGO_SITE_ORIGIN")
+if _site_origin:
+    REFLEX_DJANGO_SITE_ORIGIN = _site_origin
 
 AVATAR_MAX_BYTES = 2 * 1024 * 1024
 

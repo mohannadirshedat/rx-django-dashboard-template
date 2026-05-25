@@ -1,9 +1,25 @@
+# Local development compose stack.
+#
+# Builds the ``dev`` target (Python deps + Node toolchain, no baked SPA) and
+# bind-mounts the project so edits are reflected immediately. The container
+# runs ``manage.py run_reflex`` which auto-exports the SPA on boot and
+# serves Django + Reflex from a single ASGI process on port 8000.
+#
+# Run with:
+#   docker compose up
+#
+# Optional profiles:
+#   docker compose --profile postgres up   # use Postgres instead of SQLite
+#   docker compose --profile redis up      # add Redis for shared state
+
 services:
   web:
-    build: .
-    command: reflex run
+    build:
+      context: .
+      target: dev
+    image: rxdjango-dashboard:dev
+    command: ["python", "manage.py", "run_reflex"]
     ports:
-      - "3000:3000"
       - "8000:8000"
     env_file:
       - path: .env
@@ -15,14 +31,66 @@ services:
       SERVE_MEDIA: "1"
       RUN_COLLECTSTATIC: "0"
     volumes:
+      # Bind-mount source for live edits.
       - .:/app
-      - /app/.venv
-      - /app/.web
+      # Persist the build artefacts and Python venv inside the image so
+      # they survive container restarts without polluting the host FS.
+      - dashboard-venv:/app/.venv
+      - dashboard-web:/app/.web
+      - dashboard-states:/app/.states
       - dashboard-db:/data
       - dashboard-media:/app/media
+      - dashboard-uploads:/app/uploaded_files
     stdin_open: true
     tty: true
+    restart: unless-stopped
+
+  # Opt-in Postgres for development. Activate with
+  # ``docker compose --profile postgres up``. Pair with these env vars in
+  # ``.env``:
+  #   DJANGO_DB_ENGINE=postgresql
+  #   DJANGO_DB_NAME=rxdjango
+  #   DJANGO_DB_USER=rxdjango
+  #   DJANGO_DB_PASSWORD=rxdjango
+  #   DJANGO_DB_HOST=db
+  db:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB: ${DJANGO_DB_NAME:-rxdjango}
+      POSTGRES_USER: ${DJANGO_DB_USER:-rxdjango}
+      POSTGRES_PASSWORD: ${DJANGO_DB_PASSWORD:-rxdjango}
+    volumes:
+      - dashboard-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DJANGO_DB_USER:-rxdjango}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Opt-in Redis for sharing Reflex per-tab state across workers. Activate
+  # with ``docker compose --profile redis up`` and set
+  # ``REDIS_URL=redis://redis:6379/0`` in ``.env``.
+  redis:
+    image: redis:7-alpine
+    profiles: ["redis"]
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - dashboard-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
+  dashboard-venv:
+  dashboard-web:
+  dashboard-states:
   dashboard-db:
   dashboard-media:
+  dashboard-uploads:
+  dashboard-pgdata:
+  dashboard-redis:

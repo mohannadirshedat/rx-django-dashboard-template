@@ -1,39 +1,122 @@
+# Production-like compose stack.
+#
+# Builds the ``runtime`` image (SPA pre-built at image build time) and serves
+# it through uvicorn on port 8000. Health checks hit Reflex's ``/_health``
+# endpoint. Optional Postgres and Redis services are gated behind compose
+# profiles so the minimal SQLite topology still runs out-of-the-box.
+#
+# Run with:
+#   docker compose -f docker-compose.prod.yml up --build
+#
+# Postgres + Redis (recommended for >1 worker):
+#   docker compose -f docker-compose.prod.yml --profile postgres --profile redis up --build
+#
+# In front of this stack put a TLS-terminating reverse proxy (Nginx, Caddy,
+# Traefik, or the platform's edge) and forward WebSocket frames on
+# ``/_event``. See ``reflex-django/docs/deployment.md`` for sample configs.
+
 services:
   web:
-    build: .
+    build:
+      context: .
+      target: runtime
+      args:
+        # Build-time secret used only by ``export_reflex`` while compiling the
+        # SPA. The runtime secret comes from ``DJANGO_SECRET_KEY`` below.
+        DJANGO_SECRET_KEY: ${DJANGO_BUILD_SECRET_KEY:-build-only-key-replace-at-runtime}
+    image: rxdjango-dashboard:prod
     command:
-      - reflex
-      - run
-      - --env
-      - prod
-      - --single-port
-      - --frontend-port
-      - "3002"
+      - uvicorn
+      - reflex_django.asgi_entry:application
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --workers
+      - "${UVICORN_WORKERS:-2}"
+      - --proxy-headers
+      - --forwarded-allow-ips
+      - "*"
     ports:
-      - "3002:3002"
+      - "${PUBLIC_PORT:-8000}:8000"
     env_file:
       - path: .env
         required: false
     environment:
+      DJANGO_SETTINGS_MODULE: backend.settings
       DJANGO_DEBUG: "0"
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
+      # Database. Defaults to SQLite on a volume; flip ``DJANGO_DB_ENGINE``
+      # to ``postgresql`` (and enable the ``postgres`` profile below) for a
+      # multi-worker deployment.
+      DJANGO_DB_ENGINE: ${DJANGO_DB_ENGINE:-sqlite}
       DJANGO_DB_PATH: /data/db.sqlite3
+      DJANGO_DB_NAME: ${DJANGO_DB_NAME:-rxdjango}
+      DJANGO_DB_USER: ${DJANGO_DB_USER:-rxdjango}
+      DJANGO_DB_PASSWORD: ${DJANGO_DB_PASSWORD:-}
+      DJANGO_DB_HOST: ${DJANGO_DB_HOST:-db}
+      DJANGO_DB_PORT: ${DJANGO_DB_PORT:-5432}
+      # Optional: Redis-backed state manager (required for >1 worker).
+      REDIS_URL: ${REDIS_URL:-}
       SERVE_MEDIA: "1"
-      RUN_COLLECTSTATIC: "1"
+      RUN_COLLECTSTATIC: "0"
     volumes:
       - dashboard-db:/data
       - dashboard-media:/app/media
-      - dashboard-static:/app/staticfiles
+      - dashboard-uploads:/app/uploaded_files
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/_health"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 60s
+      start_period: 30s
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+      redis:
+        condition: service_healthy
+        required: false
+
+  # Postgres database. Activate with ``--profile postgres`` together with
+  # ``DJANGO_DB_ENGINE=postgresql`` in ``.env``. ``DJANGO_DB_PASSWORD`` MUST
+  # be set in ``.env`` when this profile is used; the empty default below
+  # keeps ``docker compose config`` valid for the SQLite topology.
+  db:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB: ${DJANGO_DB_NAME:-rxdjango}
+      POSTGRES_USER: ${DJANGO_DB_USER:-rxdjango}
+      POSTGRES_PASSWORD: ${DJANGO_DB_PASSWORD:-}
+    volumes:
+      - dashboard-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DJANGO_DB_USER:-rxdjango}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["redis"]
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - dashboard-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   dashboard-db:
   dashboard-media:
-  dashboard-static:
+  dashboard-uploads:
+  dashboard-pgdata:
+  dashboard-redis:
