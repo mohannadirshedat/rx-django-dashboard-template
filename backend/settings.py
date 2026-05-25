@@ -163,9 +163,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-_site_origin = os.environ.get("REFLEX_DJANGO_SITE_ORIGIN")
-if _site_origin:
-    REFLEX_DJANGO_SITE_ORIGIN = _site_origin
 
 AVATAR_MAX_BYTES = 2 * 1024 * 1024
 
@@ -185,3 +182,10 @@ REFLEX_DJANGO_CONTEXT_PROCESSORS = (
     "reflex_django.reflex_context.builtin_user_context",
     "reflex_django.reflex_context.builtin_i18n_context",
 )
+
+# Vite 8.0.x (default in current reflex_base) ships Rolldown as its bundler;
+# its CJS-interop layer emits ``var r=r(), t=t(), n=n(), i=i();`` inside
+# memoized factory wrappers, which crashes ``recharts`` and the Reflex
+# Socket.IO dispatcher at runtime with ``TypeError: <var> is not a function``.
+# Pin the last Rollup-based Vite (7.3.3) until upstream ships a fix.
+REFLEX_DJANGO_VITE_VERSION = "7.3.3"

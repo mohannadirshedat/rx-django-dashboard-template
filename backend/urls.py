@@ -38,12 +38,6 @@ urlpatterns += [
         rx_config={
             "frontend_port": 3000,
             "backend_port": 8000,
-            # ``recharts@3.x`` declares ``react-is`` as a peer dep only; without
-            # an explicit install the bundler embeds an old react-is shim that
-            # crashes with ``TypeError: t is not a function`` under React 19.
-            # See https://github.com/recharts/recharts/issues/7186 and
-            # https://github.com/recharts/recharts/issues/6857.
-            "frontend_packages": ["react-is@19.2.5"],
         },
     ),
 ]
