@@ -1,8 +1,19 @@
-"""Custom authentication screens inheriting from reflex-django."""
+"""Custom auth page subclasses for the dashboard.
+
+These extend the canned :class:`reflex_django.auth.BaseAuthPage` subclasses
+with the dashboard's branding (logo, gradient backdrop, card shadow).
+They are registered on the Reflex app from :mod:`dashboard.views`.
+"""
 
 import reflex as rx
-from reflex_django.auth import LoginPage, RegisterPage, PasswordResetPage, PasswordResetConfirmPage
-from ..templates.template import ThemeState
+from reflex_django.auth import (
+    LoginPage,
+    PasswordResetConfirmPage,
+    PasswordResetPage,
+    RegisterPage,
+)
+
+from dashboard.templates.template import ThemeState
 
 AUTH_CARD_MAX_WIDTH = "28em"
 PADDING_TOP = "4rem"
@@ -10,7 +21,12 @@ PADDING_TOP = "4rem"
 
 def custom_brand_icon(*, size: int = 28) -> rx.Component:
     height = f"{size / 10}em" if size else "3em"
-    return rx.image(src="/rxdjango-logo.png", height=height, border_radius="var(--radius-1)", margin_bottom="0.5em")
+    return rx.image(
+        src="/rxdjango-logo.png",
+        height=height,
+        border_radius="var(--radius-1)",
+        margin_bottom="0.5em",
+    )
 
 
 def custom_auth_card(*children: rx.Component, **props: object) -> rx.Component:
@@ -30,7 +46,7 @@ def custom_auth_card(*children: rx.Component, **props: object) -> rx.Component:
 
 
 def custom_auth_page_shell(content: rx.Component) -> rx.Component:
-    """Vertically centered page layout for auth screens with a theme toggle and proper theme wrapper."""
+    """Vertically centred page layout with a theme toggle and Radix theme wrapper."""
     return rx.theme(
         rx.box(
             rx.box(
@@ -52,7 +68,7 @@ def custom_auth_page_shell(content: rx.Component) -> rx.Component:
             position="relative",
             background=rx.color_mode_cond(
                 f"linear-gradient(135deg, {rx.color('gray', 1)} 0%, {rx.color('gray', 3)} 100%)",
-                f"linear-gradient(135deg, {rx.color('gray', 1)} 0%, {rx.color('gray', 2)} 100%)"
+                f"linear-gradient(135deg, {rx.color('gray', 1)} 0%, {rx.color('gray', 2)} 100%)",
             ),
         ),
         has_background=True,
@@ -60,6 +76,22 @@ def custom_auth_page_shell(content: rx.Component) -> rx.Component:
         gray_color=ThemeState.gray_color,
         radius=ThemeState.radius,
         scaling=ThemeState.scaling,
+    )
+
+
+def _branded_heading(heading_text: str) -> rx.Component:
+    return rx.center(
+        custom_brand_icon(),
+        rx.heading(
+            heading_text,
+            size="6",
+            as_="h2",
+            text_align="center",
+            width="100%",
+        ),
+        direction="column",
+        spacing="5",
+        width="100%",
     )
 
 
@@ -74,19 +106,7 @@ class CustomLoginPage(LoginPage):
 
     @classmethod
     def heading(cls) -> rx.Component:
-        return rx.center(
-            custom_brand_icon(),
-            rx.heading(
-                cls.heading_text(),
-                size="6",
-                as_="h2",
-                text_align="center",
-                width="100%",
-            ),
-            direction="column",
-            spacing="5",
-            width="100%",
-        )
+        return _branded_heading(cls.heading_text())
 
 
 class CustomRegisterPage(RegisterPage):
@@ -100,19 +120,7 @@ class CustomRegisterPage(RegisterPage):
 
     @classmethod
     def heading(cls) -> rx.Component:
-        return rx.center(
-            custom_brand_icon(),
-            rx.heading(
-                cls.heading_text(),
-                size="6",
-                as_="h2",
-                text_align="center",
-                width="100%",
-            ),
-            direction="column",
-            spacing="5",
-            width="100%",
-        )
+        return _branded_heading(cls.heading_text())
 
 
 class CustomPasswordResetPage(PasswordResetPage):
@@ -126,19 +134,7 @@ class CustomPasswordResetPage(PasswordResetPage):
 
     @classmethod
     def heading(cls) -> rx.Component:
-        return rx.center(
-            custom_brand_icon(),
-            rx.heading(
-                cls.heading_text(),
-                size="6",
-                as_="h2",
-                text_align="center",
-                width="100%",
-            ),
-            direction="column",
-            spacing="5",
-            width="100%",
-        )
+        return _branded_heading(cls.heading_text())
 
 
 class CustomPasswordResetConfirmPage(PasswordResetConfirmPage):
@@ -152,16 +148,4 @@ class CustomPasswordResetConfirmPage(PasswordResetConfirmPage):
 
     @classmethod
     def heading(cls) -> rx.Component:
-        return rx.center(
-            custom_brand_icon(),
-            rx.heading(
-                cls.heading_text(),
-                size="6",
-                as_="h2",
-                text_align="center",
-                width="100%",
-            ),
-            direction="column",
-            spacing="5",
-            width="100%",
-        )
+        return _branded_heading(cls.heading_text())

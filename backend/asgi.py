@@ -1,16 +1,12 @@
-"""
-ASGI config for backend project.
+"""ASGI entry point for the rxdjango-dashboard project.
 
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
+The single application here is served by both ``manage.py run_reflex`` (dev)
+and production ASGI servers (uvicorn, granian, hypercorn). It bridges Django
+and Reflex through :mod:`reflex_django.asgi_entry`.
 """
 
 import os
 
-from django.core.asgi import get_asgi_application
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
-application = get_asgi_application()
+from reflex_django.asgi_entry import application  # noqa: E402,F401

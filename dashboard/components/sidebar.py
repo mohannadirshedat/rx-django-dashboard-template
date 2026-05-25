@@ -83,9 +83,7 @@ def sidebar_item(text: str, url: str) -> rx.Component:
 
     """
     # Whether the item is active.
-    active = (rx.State.router.page.path == url.lower()) | (
-        (rx.State.router.page.path == "/") & (text == "Overview")
-    )
+    active = rx.State.router.page.path == url.lower()
 
     return rx.link(
         rx.hstack(
@@ -104,7 +102,7 @@ def sidebar_item(text: str, url: str) -> rx.Component:
             rx.match(
                 text,
                 ("Overview", sidebar_item_icon("home")),
-                ("Table", sidebar_item_icon("table-2")),
+                ("Transactions", sidebar_item_icon("table-2")),
                 ("About", sidebar_item_icon("book-open")),
                 ("Profile", sidebar_item_icon("user")),
                 ("Settings", sidebar_item_icon("settings")),
@@ -168,7 +166,7 @@ def sidebar() -> rx.Component:
 
     ordered_page_routes = [
         "/",
-        "/table",
+        "/transactions",
         "/about",
         "/profile",
         "/settings",
@@ -178,15 +176,12 @@ def sidebar() -> rx.Component:
         page_dict
         for page_list in DECORATED_PAGES.values()
         for _, page_dict in page_list
+        if page_dict.get("route") in ordered_page_routes
     ]
 
     ordered_pages = sorted(
         pages,
-        key=lambda page: (
-            ordered_page_routes.index(page["route"])
-            if page["route"] in ordered_page_routes
-            else len(ordered_page_routes)
-        ),
+        key=lambda page: ordered_page_routes.index(page["route"]),
     )
 
     width_val = rx.cond(SidebarState.is_collapsed, "4.5em", styles.sidebar_content_width)

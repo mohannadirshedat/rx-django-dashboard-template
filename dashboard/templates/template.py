@@ -1,15 +1,33 @@
-"""Common templates used between pages in the app."""
+"""Shared sidebar+navbar layout decorator for dashboard pages.
+
+This is the dashboard's custom ``@template`` decorator. It wraps a page body
+in the dashboard chrome (navbar + sidebar) and registers the route with
+Reflex via :func:`reflex_django.page` so the page is bucketed into
+``DECORATED_PAGES[reflex_mount().app_name]`` (avoids the
+``dispatch is not a function`` class of errors that result when pages land
+in ``DECORATED_PAGES[""]``).
+
+When ``login_required=True``, the template wraps the rendered component with
+:class:`~reflex_django.auth.state.DjangoAuthState` snapshot guards *before*
+the page is registered with Reflex. Stacking ``@login_required`` on top of
+``@template`` does not work because ``@template`` registers the page first
+and the outer ``@login_required`` wrapper is discarded; use the keyword
+argument instead.
+"""
 
 from __future__ import annotations
 
+import functools
 from typing import Callable
 
 import reflex as rx
+from reflex_django import page
+from reflex_django.auth.state import DjangoAuthState
+
 from .. import styles
 from ..components.navbar import navbar
 from ..components.sidebar import sidebar
 
-# Meta tags for the app.
 default_meta = [
     {
         "name": "viewport",
@@ -34,14 +52,11 @@ def menu_item_link(text, href):
 
 
 class ThemeState(rx.State):
-    """The state for the theme of the app."""
+    """Reflex state for the user-selectable theme tokens."""
 
     accent_color: str = "blue"
-
     gray_color: str = "slate"
-
     radius: str = "medium"
-
     scaling: str = "100%"
 
     @rx.event
@@ -61,46 +76,44 @@ class ThemeState(rx.State):
         self.gray_color = value
 
 
-ALL_PAGES = []
+ALL_PAGES: list[dict] = []
 
 
 def template(
     route: str | None = None,
     title: str | None = None,
     description: str | None = None,
-    meta: str | None = None,
+    meta: list[dict[str, str]] | None = None,
     script_tags: list[rx.Component] | None = None,
     on_load: rx.event.EventType[()] | None = None,
+    login_required: bool = False,
 ) -> Callable[[Callable[[], rx.Component]], rx.Component]:
-    """The template for each page of the app.
+    """Wrap a page body in the dashboard shell and register it with Reflex.
 
     Args:
-        route: The route to reach the page.
-        title: The title of the page.
-        description: The description of the page.
-        meta: Additional meta to add to the page.
-        on_load: The event handler(s) called when the page load.
-        script_tags: Scripts to attach to the page.
+        route: Client-side route (for example ``"/"`` or ``"/profile"``).
+        title: Browser tab title (also used by the sidebar).
+        description: Page description meta tag.
+        meta: Extra meta tags merged with the dashboard defaults.
+        script_tags: Optional ``<script>`` tags forwarded to Reflex.
+        on_load: Event handler(s) to run when the route is visited.
+        login_required: Require the visitor to be authenticated. Anonymous
+            visitors are redirected to ``REFLEX_DJANGO_AUTH["LOGIN_URL"]``
+            (default ``/login``). Set this on protected routes instead of
+            stacking ``@login_required`` on top — the outer decorator never
+            reaches the Reflex page registry because ``@template`` registers
+            the route first.
 
     Returns:
-        The template with the page content.
-
+        A decorator that registers the page via :func:`reflex_django.page`.
     """
+    all_meta = [*default_meta, *(meta or [])]
+    page_on_load = (
+        None if on_load is None else (on_load if isinstance(on_load, list) else [on_load])
+    )
 
     def decorator(page_content: Callable[[], rx.Component]) -> rx.Component:
-        """The template for each page of the app.
-
-        Args:
-            page_content: The content of the page.
-
-        Returns:
-            The template with the page content.
-
-        """
-        # Get the meta tags for the page.
-        all_meta = [*default_meta, *(meta or [])]
-
-        def templated_page():
+        def dashboard_body() -> rx.Component:
             return rx.vstack(
                 navbar(),
                 rx.flex(
@@ -138,22 +151,36 @@ def template(
                 spacing="0",
             )
 
-        page_on_load = on_load
-        if on_load is not None:
-            page_on_load = [ on_load]
+        def gated_body() -> rx.Component:
+            return rx.cond(
+                DjangoAuthState.is_hydrated & DjangoAuthState.is_authenticated,
+                dashboard_body(),
+                rx.center(
+                    rx.text(
+                        "Loading...",
+                        on_mount=DjangoAuthState.redirect_to_login,
+                    ),
+                    min_height="100vh",
+                    width="100%",
+                ),
+            )
 
+        page_kwargs: dict = {
+            "route": route,
+            "title": title,
+            "meta": all_meta,
+        }
+        if description is not None:
+            page_kwargs["description"] = description
+        if script_tags is not None:
+            page_kwargs["script_tags"] = script_tags
+        if page_on_load is not None:
+            page_kwargs["on_load"] = page_on_load
 
-        @rx.page(
-            route=route,
-            title=title,
-            description=description,
-            meta=all_meta,
-            script_tags=script_tags,
-            on_load=page_on_load,
-        )
+        @functools.wraps(page_content)
         def theme_wrap():
             return rx.theme(
-                templated_page(),
+                gated_body() if login_required else dashboard_body(),
                 has_background=True,
                 accent_color=ThemeState.accent_color,
                 gray_color=ThemeState.gray_color,
@@ -161,13 +188,12 @@ def template(
                 scaling=ThemeState.scaling,
             )
 
+        decorated = page(**page_kwargs)(theme_wrap)
+
         ALL_PAGES.append(
-            {
-                "route": route,
-            }
-            | ({"title": title} if title is not None else {})
+            {"route": route} | ({"title": title} if title is not None else {})
         )
 
-        return theme_wrap
+        return decorated
 
     return decorator

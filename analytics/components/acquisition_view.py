@@ -1,3 +1,5 @@
+"""Country-by-country acquisition progress bars."""
+
 import reflex as rx
 from reflex.components.radix.themes.base import LiteralAccentColor
 

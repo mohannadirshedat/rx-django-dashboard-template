@@ -1,3 +1,5 @@
+"""Generic dashboard card wrapper."""
+
 import reflex as rx
 
 from dashboard import styles

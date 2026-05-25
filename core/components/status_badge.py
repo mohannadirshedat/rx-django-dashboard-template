@@ -1,3 +1,5 @@
+"""Status badge widget shared across pages."""
+
 import reflex as rx
 
 

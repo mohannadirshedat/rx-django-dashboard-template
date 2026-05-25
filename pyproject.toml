@@ -3,7 +3,7 @@ name = "rxdjango-dashboard"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
-    "reflex-django>=0.2.6",
+    "reflex-django",
     "pillow>=11.0.0",
 ]
 

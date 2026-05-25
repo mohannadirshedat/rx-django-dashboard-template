@@ -1,7 +1,9 @@
+"""Transactions table widget (Reflex)."""
+
 import reflex as rx
 
-from ..components.status_badge import status_badge
-from ..state.transactions import TransactionState
+from core.components.status_badge import status_badge
+from items.state import TransactionState
 
 
 def _header_cell(text: str, icon: str) -> rx.Component:

@@ -1,7 +1,7 @@
+"""Reusable notification badge."""
+
 import reflex as rx
-from reflex.components.radix.themes.base import (
-    LiteralAccentColor,
-)
+from reflex.components.radix.themes.base import LiteralAccentColor
 
 from dashboard import styles
 

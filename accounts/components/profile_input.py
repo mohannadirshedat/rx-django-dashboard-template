@@ -1,3 +1,5 @@
+"""Labelled profile input widget."""
+
 import reflex as rx
 
 

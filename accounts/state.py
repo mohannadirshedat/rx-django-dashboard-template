@@ -1,6 +1,8 @@
+"""Reflex state for the user profile page."""
+
 import reflex as rx
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
+from reflex_django.auth.decorators import login_required
+from reflex_django.state import AppState
 
 from accounts.utils import (
     aget_or_create_profile,
@@ -8,8 +10,6 @@ from accounts.utils import (
     save_user_avatar,
     validate_avatar_upload,
 )
-from reflex_django.auth.decorators import login_required
-from reflex_django.state import AppState
 
 
 class ProfileState(AppState):
@@ -61,12 +61,11 @@ class ProfileState(AppState):
         await profile.asave()
 
     @rx.event
-    # @login_required
     async def handle_avatar_upload(self, files: list[rx.UploadFile]):
         if not files:
             return rx.toast.error("Choose an image first.", position="top-center")
 
-        user = self.request.user #await _resolve_user(self)
+        user = self.request.user
         if not getattr(user, "is_authenticated", False):
             return rx.toast.error(
                 "Your session expired. Refresh the page and try again.",

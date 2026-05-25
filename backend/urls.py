@@ -1,27 +1,21 @@
-"""
-URL configuration for backend project.
+"""URL configuration for the rxdjango-dashboard project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+Django routes (admin, media) are listed first; ``reflex_mount(...)`` is the
+final entry and provides the SPA catch-all for every Reflex page registered
+via ``@template`` / ``@page`` across the project apps (auto-discovered from
+``INSTALLED_APPS``).
 """
 
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, re_path
+from django.views.generic import RedirectView
 from django.views.static import serve
+from reflex_django.urls import reflex_mount
 
 urlpatterns = [
+    path("admin", RedirectView.as_view(url="/admin/", permanent=False)),
     path("admin/", admin.site.urls),
 ]
 
@@ -36,3 +30,20 @@ elif getattr(settings, "SERVE_MEDIA", False):
             {"document_root": settings.MEDIA_ROOT},
         ),
     ]
+
+urlpatterns += [
+    reflex_mount(
+        app_name="dashboard",
+        django_prefix=("/admin",),
+        rx_config={
+            "frontend_port": 3000,
+            "backend_port": 8000,
+            # ``recharts@3.x`` declares ``react-is`` as a peer dep only; without
+            # an explicit install the bundler embeds an old react-is shim that
+            # crashes with ``TypeError: t is not a function`` under React 19.
+            # See https://github.com/recharts/recharts/issues/7186 and
+            # https://github.com/recharts/recharts/issues/6857.
+            "frontend_packages": ["react-is@19.2.5"],
+        },
+    ),
+]

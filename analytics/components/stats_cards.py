@@ -1,8 +1,10 @@
+"""KPI stat cards for the overview page."""
+
 import reflex as rx
 from reflex.components.radix.themes.base import LiteralAccentColor
 
-from .. import styles
-from ..state.overview import OverviewState
+from analytics.state import OverviewState
+from dashboard import styles
 
 
 def stats_card(
@@ -21,7 +23,6 @@ def stats_card(
     )
     arrow_icon = rx.cond(is_increase, "trending-up", "trending-down")
     arrow_color = rx.cond(is_increase, "grass", "tomato")
-    change_label = rx.cond(is_increase, "increase", "decrease")
 
     return rx.card(
         rx.vstack(

@@ -73,9 +73,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "reflex_django",
-    "items",
+    "dashboard",
+    "core",
     "accounts",
     "analytics",
+    "items",
 ]
 
 MIDDLEWARE = [

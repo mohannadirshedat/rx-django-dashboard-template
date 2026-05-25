@@ -1,9 +1,9 @@
-import reflex as rx
-from reflex.components.radix.themes.base import (
-    LiteralAccentColor,
-)
+"""Recharts visualisations for the analytics overview page."""
 
-from ..state.overview import OverviewState
+import reflex as rx
+from reflex.components.radix.themes.base import LiteralAccentColor
+
+from analytics.state import OverviewState
 
 
 def area_toggle() -> rx.Component:
@@ -69,9 +69,7 @@ def users_chart() -> rx.Component:
         rx.recharts.area_chart(
             _create_gradient("blue", "colorBlue"),
             _custom_tooltip("blue"),
-            rx.recharts.cartesian_grid(
-                stroke_dasharray="3 3",
-            ),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
             rx.recharts.area(
                 data_key="Users",
                 stroke=rx.color("blue", 9),
@@ -85,9 +83,7 @@ def users_chart() -> rx.Component:
             height=425,
         ),
         rx.recharts.bar_chart(
-            rx.recharts.cartesian_grid(
-                stroke_dasharray="3 3",
-            ),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
             _custom_tooltip("blue"),
             rx.recharts.bar(
                 data_key="Users",
@@ -109,9 +105,7 @@ def revenue_chart() -> rx.Component:
         rx.recharts.area_chart(
             _create_gradient("green", "colorGreen"),
             _custom_tooltip("green"),
-            rx.recharts.cartesian_grid(
-                stroke_dasharray="3 3",
-            ),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
             rx.recharts.area(
                 data_key="Revenue",
                 stroke=rx.color("green", 9),
@@ -126,9 +120,7 @@ def revenue_chart() -> rx.Component:
         ),
         rx.recharts.bar_chart(
             _custom_tooltip("green"),
-            rx.recharts.cartesian_grid(
-                stroke_dasharray="3 3",
-            ),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
             rx.recharts.bar(
                 data_key="Revenue",
                 stroke=rx.color("green", 9),
@@ -149,9 +141,7 @@ def orders_chart() -> rx.Component:
         rx.recharts.area_chart(
             _create_gradient("purple", "colorPurple"),
             _custom_tooltip("purple"),
-            rx.recharts.cartesian_grid(
-                stroke_dasharray="3 3",
-            ),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
             rx.recharts.area(
                 data_key="Orders",
                 stroke=rx.color("purple", 9),
@@ -166,9 +156,7 @@ def orders_chart() -> rx.Component:
         ),
         rx.recharts.bar_chart(
             _custom_tooltip("purple"),
-            rx.recharts.cartesian_grid(
-                stroke_dasharray="3 3",
-            ),
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3"),
             rx.recharts.bar(
                 data_key="Orders",
                 stroke=rx.color("purple", 9),

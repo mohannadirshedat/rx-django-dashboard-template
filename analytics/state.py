@@ -1,8 +1,17 @@
-import reflex as rx
+"""Reflex state for the overview/dashboard landing page."""
 
-from analytics.models import DailyMetric, DevicePeriod, DeviceShare, KpiKey, KpiSnapshot, MetricType
+import reflex as rx
 from reflex_django.auth.decorators import login_required
 from reflex_django.state import AppState
+
+from analytics.models import (
+    DailyMetric,
+    DevicePeriod,
+    DeviceShare,
+    KpiKey,
+    KpiSnapshot,
+    MetricType,
+)
 
 _CHART_KEYS = {
     MetricType.USERS: ("Users", "users_data"),
@@ -52,7 +61,7 @@ class OverviewState(AppState):
         await self.refresh_django_user_fields()
         from accounts.utils import aget_or_create_profile
 
-        user = self.request.user #current_user()
+        user = self.request.user
         if user.is_authenticated:
             profile = await aget_or_create_profile(user)
             self.welcome_name = profile.display_name or user.get_username()

@@ -1,8 +1,8 @@
-"""Profile avatar display and upload."""
+"""Profile avatar display and upload widget."""
 
 import reflex as rx
 
-from ..state.profile import ProfileState
+from accounts.state import ProfileState
 
 _UPLOAD_ID = "avatar_upload"
 _COLOR = "var(--accent-9)"

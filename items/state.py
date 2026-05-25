@@ -1,14 +1,16 @@
+"""Reflex state for the transactions table page."""
+
 import math
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
 import reflex as rx
 from django.db.models import Q
+from reflex_django.auth.decorators import login_required
+from reflex_django.state import AppState
 
 from items.models import Transaction, TransactionStatus
 from items.serializers import TransactionSerializer
-from reflex_django.auth.decorators import login_required
-from reflex_django.state import AppState
 
 STATUS_VALUES = {choice.value for choice in TransactionStatus}
 
