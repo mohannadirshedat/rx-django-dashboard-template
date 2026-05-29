@@ -5,6 +5,7 @@ class MetricType(models.TextChoices):
     USERS = "users", "Users"
     REVENUE = "revenue", "Revenue"
     ORDERS = "orders", "Orders"
+    ##
 
 
 class KpiKey(models.TextChoices):
