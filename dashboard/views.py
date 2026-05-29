@@ -11,7 +11,7 @@ subclass); Reflex calls it with ``()`` at render time and the
 ``AuthPageMeta`` metaclass returns the page component.
 """
 
-from reflex_django import page
+from reflex_django.pages.decorators import page
 from reflex_django.auth import get_auth_settings
 
 from dashboard.auth import (

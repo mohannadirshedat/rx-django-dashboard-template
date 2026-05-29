@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 import reflex as rx
 from django.db.models import Q
 from reflex_django.auth.decorators import login_required
-from reflex_django.state import AppState
+from reflex_django.states import AppState
 
 from items.models import Transaction, TransactionStatus
 from items.serializers import TransactionSerializer

@@ -21,8 +21,8 @@ import functools
 from typing import Callable
 
 import reflex as rx
-from reflex_django import page
-from reflex_django.auth.state import DjangoAuthState
+from reflex_django.pages.decorators import page
+from reflex_django.states import DjangoAuthState
 
 from .. import styles
 from ..components.navbar import navbar

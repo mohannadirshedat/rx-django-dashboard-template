@@ -3,7 +3,7 @@
 import reflex as rx
 
 from .. import styles
-from reflex_django.auth.state import DjangoAuthState
+from reflex_django.states import DjangoAuthState
 
 
 class SidebarState(rx.State):

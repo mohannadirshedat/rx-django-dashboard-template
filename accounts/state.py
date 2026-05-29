@@ -2,7 +2,7 @@
 
 import reflex as rx
 from reflex_django.auth.decorators import login_required
-from reflex_django.state import AppState
+from reflex_django.states import AppState
 
 from accounts.utils import (
     aget_or_create_profile,

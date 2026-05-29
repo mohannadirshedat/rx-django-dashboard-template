@@ -19,7 +19,6 @@ from core.components.card import card
 from dashboard.templates import template
 
 
-
 def _time_data() -> rx.Component:
     return rx.hstack(
         rx.tooltip(
