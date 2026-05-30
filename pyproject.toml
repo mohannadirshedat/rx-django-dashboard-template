@@ -5,6 +5,8 @@ requires-python = ">=3.14"
 dependencies = [
     "reflex-django",
     "pillow>=11.0.0",
+    "openai>=2.8",
+    "python-decouple==3.8",
 ]
 
 [tool.uv.sources]

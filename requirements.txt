@@ -2,6 +2,9 @@
 reflex-django>=0.2.6
 pillow>=11.0.0
 
+# OpenAI client for the chatbot page (streaming chat completions).
+openai>=2.8
+
 # ASGI server (production; uvicorn is the default reference server in
 # reflex-django's deployment guide). uvicorn[standard] pulls in fast
 # uvloop/httptools wheels on Linux.

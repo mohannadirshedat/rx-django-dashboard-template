@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     "accounts",
     "analytics",
     "items",
+    "chatbot",
 ]
 
 MIDDLEWARE = [
