@@ -51,7 +51,7 @@ urlpatterns += [
         app_name="dashboard",
         django_prefix=("/admin","/media",),
         rx_config=_rx_config,
-        plugins=[rx.plugins.RadixThemesPlugin()],
+        plugins=[rx.plugins.RadixThemesPlugin(),rx.plugins.TailwindV4Plugin()],
 
     ),
 ]
