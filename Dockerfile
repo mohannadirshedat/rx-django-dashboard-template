@@ -72,7 +72,7 @@ COPY . .
 # is only valid because ``manage.py export_reflex`` never accepts user input.
 ARG DJANGO_SECRET_KEY="build-only-key-replace-at-runtime"
 ENV DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY} \
-    DJANGO_DEBUG=0
+    DJANGO_DEBUG=False
 
 RUN python manage.py export_reflex \
         --frontend-only --no-zip --stage-to-static-root \
@@ -88,7 +88,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     PATH="/app/.venv/bin:$PATH" \
     DJANGO_SETTINGS_MODULE=backend.settings \
-    DJANGO_DEBUG=0
+    DJANGO_DEBUG=False
 
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \

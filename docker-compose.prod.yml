@@ -71,12 +71,12 @@ services:
       SERVICE_FQDN_WEB_3000: ""
       # ----- Django ------------------------------------------------------
       DJANGO_SETTINGS_MODULE: backend.settings
-      DJANGO_DEBUG: "0"
+      DJANGO_DEBUG: "False"
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env / Coolify env}
       # Coolify terminates TLS, so the secure-cookie / HSTS block in
       # ``backend/settings.py`` flips on automatically. If you ever run this
       # compose without a TLS-terminating proxy in front, set
-      # ``DJANGO_BEHIND_TLS_PROXY=0`` in the env to relax cookie flags.
+      # ``DJANGO_BEHIND_TLS_PROXY=False`` in the env to relax cookie flags.
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
       # ----- Database ----------------------------------------------------
@@ -92,8 +92,8 @@ services:
       # ----- Optional: Redis-backed state manager (required for >1 worker)
       REDIS_URL: ${REDIS_URL:-}
       # ----- Misc --------------------------------------------------------
-      SERVE_MEDIA: "1"
-      RUN_COLLECTSTATIC: "0"
+      SERVE_MEDIA: "True"
+      RUN_COLLECTSTATIC: "False"
     volumes:
       - dashboard-db:/data
       - dashboard-media:/app/media

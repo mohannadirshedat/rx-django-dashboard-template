@@ -6,8 +6,6 @@ via ``@template`` / ``@page`` across the project apps (auto-discovered from
 ``INSTALLED_APPS``).
 """
 
-import os
-
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -16,6 +14,8 @@ from django.views.generic import RedirectView
 from django.views.static import serve
 from reflex_django.urls import reflex_mount
 import reflex as rx
+
+from core.secrets import secret_manager
 urlpatterns = [
     path("admin", RedirectView.as_view(url="/admin/", permanent=False)),
     path("admin/", admin.site.urls),
@@ -41,7 +41,7 @@ _rx_config: dict[str, object] = {
 # When ``REDIS_URL`` is set (production / multi-worker deploys), share Reflex
 # per-tab state across workers through Redis instead of process memory. Falls
 # back to the default in-memory state manager when unset (single-worker dev).
-_redis_url = os.environ.get("REDIS_URL")
+_redis_url = secret_manager.get_secret("REDIS_URL", default=None)
 if _redis_url:
     _rx_config["redis_url"] = _redis_url
 

@@ -10,25 +10,33 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import os
 from pathlib import Path
+
+from core.secrets import secret_manager
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Sentinel so missing secrets fall back to the provided default instead of
+# raising (``secret_manager.get_secret`` raises when no default is given).
+_UNSET = object()
+
 
 def _env_bool(name: str, default: bool = False) -> bool:
-    value = os.environ.get(name)
-    if value is None:
+    """Read a boolean secret. Use ``True`` / ``False`` in ``.env`` (``1`` / ``0`` still work)."""
+    value = secret_manager.get_secret(name, default=_UNSET)
+    if value is _UNSET:
         return default
-    return value.strip().lower() not in {"0", "false", "no", "off"}
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() not in {"0", "false", "no", "off"}
 
 
 def _env_list(name: str, default: tuple[str, ...] = ()) -> list[str]:
-    value = os.environ.get(name)
-    if not value:
+    value = secret_manager.get_secret(name, default=_UNSET)
+    if value is _UNSET or not value:
         return list(default)
-    return [item.strip() for item in value.split(",") if item.strip()]
+    return [item.strip() for item in str(value).split(",") if item.strip()]
 
 
 # Quick-start development settings - unsuitable for production
@@ -36,7 +44,7 @@ def _env_list(name: str, default: tuple[str, ...] = ()) -> list[str]:
 
 DEBUG = _env_bool("DJANGO_DEBUG", default=True)
 
-_secret_key = os.environ.get("DJANGO_SECRET_KEY")
+_secret_key = secret_manager.get_secret("DJANGO_SECRET_KEY", default=None)
 if not _secret_key:
     if DEBUG:
         _secret_key = "django-insecure-!k+i%x8j^l)((y!n61e#sg%#u)9&m#ig&erejtc4y(yl(h+azl"
@@ -83,7 +91,9 @@ if _behind_tls:
     SECURE_SSL_REDIRECT = _env_bool("DJANGO_SECURE_SSL_REDIRECT", default=True)
     SESSION_COOKIE_SECURE = _env_bool("DJANGO_SESSION_COOKIE_SECURE", default=True)
     CSRF_COOKIE_SECURE = _env_bool("DJANGO_CSRF_COOKIE_SECURE", default=True)
-    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_SECONDS = int(
+        secret_manager.get_secret("DJANGO_SECURE_HSTS_SECONDS", default=31536000)
+    )
     SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool(
         "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True
     )
@@ -152,22 +162,26 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # ``DJANGO_DB_HOST`` / ``DJANGO_DB_PORT`` to use Postgres (see
 # ``docker-compose.prod.yml``).
 
-_db_engine = (os.environ.get("DJANGO_DB_ENGINE") or "sqlite").lower()
+_db_engine = (
+    str(secret_manager.get_secret("DJANGO_DB_ENGINE", default="") or "sqlite").lower()
+)
 
 if _db_engine in {"postgres", "postgresql"}:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("DJANGO_DB_NAME", "rxdjango"),
-            "USER": os.environ.get("DJANGO_DB_USER", "rxdjango"),
-            "PASSWORD": os.environ.get("DJANGO_DB_PASSWORD", ""),
-            "HOST": os.environ.get("DJANGO_DB_HOST", "db"),
-            "PORT": os.environ.get("DJANGO_DB_PORT", "5432"),
-            "CONN_MAX_AGE": int(os.environ.get("DJANGO_DB_CONN_MAX_AGE", "600")),
+            "NAME": str(secret_manager.get_secret("DJANGO_DB_NAME", default="rxdjango")),
+            "USER": str(secret_manager.get_secret("DJANGO_DB_USER", default="rxdjango")),
+            "PASSWORD": str(secret_manager.get_secret("DJANGO_DB_PASSWORD", default="")),
+            "HOST": str(secret_manager.get_secret("DJANGO_DB_HOST", default="db")),
+            "PORT": str(secret_manager.get_secret("DJANGO_DB_PORT", default="5432")),
+            "CONN_MAX_AGE": int(
+                secret_manager.get_secret("DJANGO_DB_CONN_MAX_AGE", default=600)
+            ),
         }
     }
 else:
-    _db_path = os.environ.get("DJANGO_DB_PATH")
+    _db_path = secret_manager.get_secret("DJANGO_DB_PATH", default=None)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -216,7 +230,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-_site_origin = os.environ.get("REFLEX_DJANGO_SITE_ORIGIN")
+_site_origin = secret_manager.get_secret("REFLEX_DJANGO_SITE_ORIGIN", default=None)
 if _site_origin:
     REFLEX_DJANGO_SITE_ORIGIN = _site_origin
 

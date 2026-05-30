@@ -196,9 +196,9 @@ docker compose -f docker-compose.prod.yml up --build
 
 For HTTPS-aware deployments (the usual case behind Coolify, Nginx, Caddy, or a
 cloud LB), `backend/settings.py` automatically enables `SECURE_PROXY_SSL_HEADER`,
-`SECURE_SSL_REDIRECT`, secure cookies, and HSTS whenever `DJANGO_DEBUG=0`. You
-can disable individual knobs with `DJANGO_BEHIND_TLS_PROXY=0`,
-`DJANGO_SECURE_SSL_REDIRECT=0`, etc.
+`SECURE_SSL_REDIRECT`, secure cookies, and HSTS whenever `DJANGO_DEBUG=False`. You
+can disable individual knobs with `DJANGO_BEHIND_TLS_PROXY=False`,
+`DJANGO_SECURE_SSL_REDIRECT=False`, etc.
 
 ### Persistent volumes
 
@@ -260,7 +260,7 @@ into `rx.theme(…)` so every page reacts to changes from `/settings`.
 ### Django admin and APIs
 
 - Django admin: **`/admin/`** (configured per app in `*/admin.py`).
-- User uploads served at **`/media/`** (in dev, and when `SERVE_MEDIA=1`).
+- User uploads served at **`/media/`** (in dev, and when `SERVE_MEDIA=True`).
 - The Reflex WebSocket: **`/_event`**.
 - File uploads (`rx.upload`): **`/_upload`** — automatically registered by
   `reflex_django.app_factory._ensure_optional_api_endpoints` at boot.

@@ -6,7 +6,6 @@ Each answer is streamed token-by-token from the OpenAI API, flushing partial
 state to the browser with ``yield`` after every delta.
 """
 
-import os
 from typing import TypedDict
 
 import reflex as rx
@@ -14,6 +13,7 @@ from reflex_django.auth.decorators import login_required
 from reflex_django.states import AppState
 
 from chatbot.models import ChatMessage, ChatSession
+from core.secrets import secret_manager
 
 DEFAULT_MODEL = "gpt-4o-mini"
 SYSTEM_PROMPT = (
@@ -116,7 +116,7 @@ class ChatbotState(AppState):
         if not question or self.processing:
             return
 
-        api_key = os.environ.get("OPENAI_API_KEY",default="")
+        api_key = secret_manager.get_secret("OPENAI_API_KEY", default="")
         if not api_key:
             self.error = "OPENAI_API_KEY is not set."
             yield rx.toast.error(
@@ -161,7 +161,7 @@ class ChatbotState(AppState):
             from openai import AsyncOpenAI
 
             client = AsyncOpenAI(api_key=api_key)
-            model = os.environ.get("OPENAI_CHAT_MODEL", DEFAULT_MODEL)
+            model = secret_manager.get_secret("OPENAI_CHAT_MODEL", default=DEFAULT_MODEL)
 
             async with client.chat.completions.stream(
                 model=model,
